@@ -1,0 +1,64 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <script async src="https://docs.opencv.org/master/opencv.js" onload="onOpenCvReady();" type="text/javascript"></script>
+    <title>Image Processing with Computer Vision</title>
+</head>
+<body>
+    <h1>Image Processing with Computer Vision</h1>
+    <input type="file" id="inputImage" accept="image/*" />
+    <button onclick="processImage()">Process Image</button>
+
+    <h2>Original Image</h2>
+    <canvas id="originalCanvas"></canvas>
+
+    <h2>Processed Image</h2>
+    <canvas id="processedCanvas"></canvas>
+
+    <script>
+        let originalImage, processedImage;
+
+        function onOpenCvReady() {
+            document.getElementById('inputImage').disabled = false;
+        }
+
+        function processImage() {
+            const inputElement = document.getElementById('inputImage');
+            const inputCanvas = document.getElementById('originalCanvas');
+            const processedCanvas = document.getElementById('processedCanvas');
+            
+            const img = new Image();
+            const reader = new FileReader();
+
+            reader.onload = function(e) {
+                img.onload = function() {
+                    inputCanvas.width = img.width;
+                    inputCanvas.height = img.height;
+                    const inputContext = inputCanvas.getContext('2d');
+                    inputContext.drawImage(img, 0, 0, img.width, img.height);
+
+                    const srcMat = cv.imread(inputCanvas);
+                    const dstMat = new cv.Mat();
+
+                    // Convert the image to grayscale
+                    cv.cvtColor(srcMat, dstMat, cv.COLOR_RGBA2GRAY);
+
+                    // Apply edge detection
+                    cv.Canny(dstMat, dstMat, 50, 150);
+
+                    cv.imshow(processedCanvas, dstMat);
+
+                    srcMat.delete();
+                    dstMat.delete();
+                };
+
+                img.src = e.target.result;
+            };
+
+            reader.readAsDataURL(inputElement.files[0]);
+        }
+    </script>
+</body>
+</html>
